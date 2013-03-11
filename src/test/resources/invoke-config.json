@@ -3,7 +3,7 @@
   "url": "src/test/resources/test.war",
   "deploy": "target/fiddle.war",
   "preDeploy": ["ls /tmp"],
-  "postDeploy": ["scp target/fiddle.war localhost:/tmp/stix.war"],
+  "postDeploy": ["scp target/fiddle.war target/stix.war"],
   "config": {
     "name": "Flying Purple Monkey"
   }

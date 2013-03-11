@@ -3,9 +3,36 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>config-manager</groupId>
-  <artifactId>config-manager</artifactId>
+  <parent>
+    <groupId>org.sonatype.oss</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>7</version>
+  </parent>
+
+  <groupId>org.inigma</groupId>
+  <artifactId>deployer</artifactId>
   <version>0.1-SNAPSHOT</version>
+  <packaging>jar</packaging>
+
+  <scm>
+    <connection>scm:git:git://github.com/sepatel/deployer.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/sepatel/deployer</developerConnection>
+    <url>http://github.com/sepatel/deployer</url>
+  </scm>
+
+  <build>
+    <defaultGoal>clean package</defaultGoal>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.5.1</version>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
   <dependencies>
     <dependency>

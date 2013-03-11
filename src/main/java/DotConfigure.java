@@ -14,9 +14,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLStreamHandler;
-import java.net.URLStreamHandlerFactory;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
@@ -44,6 +41,14 @@ public class DotConfigure {
         } catch (ScriptException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static void main(String[] args) {
+        if (args.length != 1) {
+            System.out.println("This application takes only a single argument which is a url to the deployment config.");
+            System.exit(1);
+        }
+        new DotConfigure(args[0]);
     }
 
     private DotConfiguration config;
