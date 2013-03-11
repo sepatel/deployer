@@ -1,6 +1,6 @@
 {
   "type": "war",
-  "url": "target/test-1.0.war",
+  "url": "http://localhost/download/test-1.0.war",
   "deploy": "http://tomcat:tomcat@localhost:8080/manager/deploy?path=/test&update=true",
   "config": {
     "name": "Flying Purple Monkey"
