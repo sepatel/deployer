@@ -1,3 +1,5 @@
+package org.inigma.deployer;
+
 /**
  * Date: 3/9/13 9:52 PM
  *

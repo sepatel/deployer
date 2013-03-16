@@ -1,3 +1,5 @@
+package org.inigma.deployer;
+
 import org.junit.Test;
 
 import javax.script.ScriptException;
