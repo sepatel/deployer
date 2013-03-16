@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 /**
@@ -45,12 +46,23 @@ public class DotConfigure {
         }
     }
 
-    public static void main(String[] args) {
-        if (args.length != 1) {
-            System.out.println("This application takes only a single argument which is a url to the deployment config.");
+    public static void main(String[] args) throws IOException {
+        LogManager.getLogManager().readConfiguration(DotConfigure.class.getResourceAsStream("logging.properties"));
+        logger.severe("this is severe");
+        logger.warning("this is a warning");
+        logger.info("this is info");
+        logger.config("this is config");
+        logger.fine("this is fine");
+        logger.finer("this is finer");
+        logger.finest("this is finest");
+        if (args.length == 0) {
+            System.out.println("Requires an argument which is the url to the deployment configuration.");
             System.exit(1);
         }
-        new DotConfigure(args[0]);
+        for (String config : args) {
+            logger.config("Invoking " + config);
+            new DotConfigure(config).invoke();
+        }
     }
 
     private DotConfiguration config;
@@ -111,6 +123,7 @@ public class DotConfigure {
     private void deploy(File resource) {
         try {
             URL url = getUrl(config.getDeploy());
+            logger.config("Deploying to " + url);
             if ("file".equals(url.getProtocol())) {
                 FileOutputStream fos = new FileOutputStream(url.getPath());
                 FileInputStream fis = new FileInputStream(resource);
@@ -140,6 +153,7 @@ public class DotConfigure {
             fos = new FileOutputStream(temp);
             URL url = getUrl(config.getUrl());
             copy(url.openStream(), fos);
+            temp.deleteOnExit(); // remove temporary resource
             return temp;
         } catch (IOException e) {
             throw new DotException(e);
@@ -165,6 +179,7 @@ public class DotConfigure {
                 fos.write(script.getBytes());
                 fos.close();
 
+                logger.config("Script: " + script);
                 Process process = Runtime.getRuntime().exec(exec.getAbsolutePath());
                 process.waitFor();
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -174,7 +189,7 @@ public class DotConfigure {
                     logger.severe(baos.toString());
                     throw new DotException("Exit status " + process.exitValue() + " executing:\n" + script);
                 } else {
-                    logger.info(baos.toString());
+                    logger.fine(baos.toString());
                 }
             } catch (IOException e) {
                 throw new DotException(e.getMessage() + " executing:\n" + script);
