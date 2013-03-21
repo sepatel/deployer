@@ -48,13 +48,6 @@ public class DotConfigure {
 
     public static void main(String[] args) throws IOException {
         LogManager.getLogManager().readConfiguration(DotConfigure.class.getResourceAsStream("logging.properties"));
-        logger.severe("this is severe");
-        logger.warning("this is a warning");
-        logger.info("this is info");
-        logger.config("this is config");
-        logger.fine("this is fine");
-        logger.finer("this is finer");
-        logger.finest("this is finest");
         if (args.length == 0) {
             System.out.println("Requires an argument which is the url to the deployment configuration.");
             System.exit(1);
