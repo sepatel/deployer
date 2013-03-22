@@ -23,8 +23,14 @@ public class DotConfigureTest {
     }
 
     @Test
-    public void invoke() {
-        DotConfigure dot = new DotConfigure(DotConfigure.class.getResourceAsStream("/invoke-config.json"));
+    public void invokeTarGzConfig() {
+        DotConfigure dot = new DotConfigure(DotConfigure.class.getResourceAsStream("/invoke-config-tarball.json"));
+        dot.invoke();
+    }
+
+    @Test
+    public void invokeWarConfig() {
+        DotConfigure dot = new DotConfigure(DotConfigure.class.getResourceAsStream("/invoke-config-war.json"));
         dot.invoke();
     }
 }

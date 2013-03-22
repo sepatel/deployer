@@ -1,0 +1,10 @@
+{
+  "type": "tar.gz",
+  "url": "src/test/resources/test.tar.gz",
+  "deploy": "target/fiddle.tar.gz",
+  "preDeploy": ["ls /tmp"],
+  "postDeploy": ["scp target/fiddle.tar.gz target/stix.tar.gz"],
+  "config": {
+    "name": "Flying Purple Monkey"
+  }
+}
