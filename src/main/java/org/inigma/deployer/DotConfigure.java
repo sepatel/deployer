@@ -36,6 +36,9 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 
 /**
  * @author <a href='mailto:sejal@sejal.org">Sejal Patel</a>
@@ -92,11 +95,17 @@ public class DotConfigure {
     public void invoke() {
         File resource = downloadResource();
         File processedResource = null;
-        if ("war".equalsIgnoreCase(config.getType())) {
+        if ("war".equalsIgnoreCase(config.getType()) || "jar".equalsIgnoreCase(config.getType())) {
             try {
                 processedResource = processWar(new JarFile(resource));
             } catch (IOException e) {
                 throw new DotException("Issue processing war: " + resource, e);
+            }
+        } else if ("zip".equalsIgnoreCase((config.getType()))) {
+            try {
+                processedResource = processZip(new ZipFile(resource));
+            } catch (IOException e) {
+                throw new DotException("Issue processing zip: " + resource, e);
             }
         } else if ("tar.gz".equalsIgnoreCase(config.getType())) {
             try {
@@ -311,6 +320,47 @@ public class DotConfigure {
             return new ByteArrayInputStream(result.getBytes());
         } catch (ScriptException e) {
             throw new DotException("Unable to evaluate template", e);
+        }
+    }
+
+    private File processZip(ZipFile zipFile) {
+        String ext = config.getTemplateExtension();
+        Enumeration<? extends ZipEntry> entries = zipFile.entries();
+        Set<String> ignores = new HashSet<String>();
+        while (entries.hasMoreElements()) {
+            ZipEntry jarEntry = entries.nextElement();
+            String name = jarEntry.getName();
+            if (name.endsWith(ext)) {
+                ignores.add(name.substring(0, name.lastIndexOf(ext)));
+            }
+        }
+
+        entries = zipFile.entries();
+        try {
+            File temp = File.createTempFile("dot-", ".zip");
+            ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(temp));
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+                if (ignores.contains(entry.getName())) { // template exists so don't copy over the original
+                    continue;
+                }
+                String name = entry.getName();
+                if (name.endsWith(ext)) {
+                    ZipEntry newentry = new ZipEntry(name.substring(0, name.lastIndexOf(ext)));
+                    newentry.setTime(entry.getTime());
+                    zos.putNextEntry(newentry);
+                    copy(processTemplate(zipFile.getInputStream(entry)), zos);
+                    zos.closeEntry();
+                } else {
+                    zos.putNextEntry(entry);
+                    copy(zipFile.getInputStream(entry), zos);
+                    zos.closeEntry();
+                }
+            }
+            zos.close();
+            return temp;
+        } catch (IOException e) {
+            throw new DotException(e);
         }
     }
 
