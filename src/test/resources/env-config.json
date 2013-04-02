@@ -1,0 +1,10 @@
+{
+  "type": "war",
+  "url": "src/test/resources/{{=it.resource}}",
+  "deploy": "{{=prop['java.io.tmpdir']}}/vars.war",
+  "config": {
+    "name": "Flying Purple Monkey",
+    "resource": "test.war",
+    "path": "path"
+  }
+}

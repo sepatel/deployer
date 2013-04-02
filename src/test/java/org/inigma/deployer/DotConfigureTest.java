@@ -3,7 +3,9 @@ package org.inigma.deployer;
 import org.junit.Test;
 
 import javax.script.ScriptException;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import static org.junit.Assert.*;
 
@@ -31,6 +33,38 @@ public class DotConfigureTest {
     @Test
     public void invokeWarConfig() {
         DotConfigure dot = new DotConfigure(DotConfigure.class.getResourceAsStream("/invoke-config-war.json"));
+        dot.invoke();
+    }
+
+    @Test
+    public void templateSupportsEnvironmentVariables() throws IOException {
+        String answer = "Hello Flying Purple Monkey, " + System.getenv("USER");
+        ByteArrayInputStream bais = new ByteArrayInputStream("Hello {{=it.name}}, {{=env.USER}}".getBytes());
+        DotConfigure dot = new DotConfigure("src/test/resources/env-config.json");
+        InputStream inputStream = dot.processTemplate(bais);
+        byte[] buffer = new byte[4096];
+        int read = inputStream.read(buffer);
+        assertTrue(read > 0);
+        String result = new String(buffer, 0, read);
+        assertEquals(answer, result);
+    }
+
+    @Test
+    public void templateSupportsSystemProperties() throws IOException {
+        String answer = "Hello Flying Purple Monkey, " + System.getProperty("java.vm.vendor");
+        ByteArrayInputStream bais = new ByteArrayInputStream(("Hello {{=it.name}}, {{=prop['java.vm.vendor']}}").getBytes());
+        DotConfigure dot = new DotConfigure("src/test/resources/env-config.json");
+        InputStream inputStream = dot.processTemplate(bais);
+        byte[] buffer = new byte[4096];
+        int read = inputStream.read(buffer);
+        assertTrue(read > 0);
+        String result = new String(buffer, 0, read);
+        assertEquals(answer, result);
+    }
+
+    @Test
+    public void invokeWarWithVariables() {
+        DotConfigure dot = new DotConfigure("src/test/resources/env-config.json");
         dot.invoke();
     }
 }
