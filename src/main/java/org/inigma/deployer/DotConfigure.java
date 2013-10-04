@@ -9,6 +9,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -46,9 +47,11 @@ public class DotConfigure {
     private static Logger logger = Logger.getLogger(DotConfigure.class.getName());
 
     static { // initialize the javascript engine with the doT.js implementation
-        InputStream in = DotConfigure.class.getResourceAsStream("doT.js");
+        InputStream dotStream = DotConfigure.class.getResourceAsStream("doT.js");
+        InputStream yamlStream = DotConfigure.class.getResourceAsStream("yaml.js");
         try {
-            JAVASCRIPT.eval(new InputStreamReader(in));
+            JAVASCRIPT.eval(new InputStreamReader(yamlStream));
+            JAVASCRIPT.eval(new InputStreamReader(dotStream));
             JAVASCRIPT.eval("doT.templateSettings.strip = false");
             JAVASCRIPT.eval("doT.templateSettings.varname = 'it, env, prop'");
             JAVASCRIPT.eval("env = {}");
@@ -62,6 +65,13 @@ public class DotConfigure {
             }
         } catch (ScriptException e) {
             throw new RuntimeException(e);
+        } finally {
+            try {
+                dotStream.close();
+                yamlStream.close();
+            } catch (IOException e) {
+                // ignore
+            }
         }
     }
 
@@ -269,20 +279,6 @@ public class DotConfigure {
         }
     }
 
-    private String inputToString(InputStream in) {
-        StringBuilder sb = new StringBuilder();
-        int read;
-        byte[] buffer = new byte[4096];
-        try {
-            while ((read = in.read(buffer)) > 0) {
-                sb.append(new String(buffer, 0, read));
-            }
-        } catch (IOException e) {
-            throw new DotException(e);
-        }
-        return sb.toString();
-    }
-
     private void copy(InputStream in, OutputStream out) {
         byte[] buffer = new byte[4096];
         int read = -1;
@@ -305,9 +301,9 @@ public class DotConfigure {
                 copy(fis, fos);
                 fis.close();
                 fos.close();
-            // } else if ("http".equals(url.getProtocol()) || "https".equals(url.getProtocol())) {
-            // } else if ("ftp".equals(url.getProtocol())) {
-            // } else if ("scp".equals(url.getProtocol())) {
+                // } else if ("http".equals(url.getProtocol()) || "https".equals(url.getProtocol())) {
+                // } else if ("ftp".equals(url.getProtocol())) {
+                // } else if ("scp".equals(url.getProtocol())) {
             } else {
                 logger.warning("Protocol '" + url.getProtocol() + "' not yet supported");
             }
@@ -402,8 +398,9 @@ public class DotConfigure {
             SimpleBindings bindings = new SimpleBindings();
             bindings.putAll(JAVASCRIPT.getBindings(ScriptContext.ENGINE_SCOPE));
             bindings.put("config", scanner.next());
+            Map<String, Object> json = (Map<String, Object>) JAVASCRIPT
+                    .eval("config = (config.match(/^\\w*\\{/) ?  JSON.parse(config) : YAML.parse(config))", bindings);
 
-            Map<String, Object> json = (Map<String, Object>) JAVASCRIPT.eval("config = JSON.parse(config)", bindings);
             config = new DotConfiguration();
             config.setType((String) json.get("type"));
             config.setUrl((String) json.get("url"));
@@ -415,6 +412,20 @@ public class DotConfigure {
         } catch (ScriptException e) {
             throw new DotException(e);
         }
+    }
+
+    private String inputToString(InputStream in) {
+        StringBuilder sb = new StringBuilder();
+        int read;
+        byte[] buffer = new byte[4096];
+        try {
+            while ((read = in.read(buffer)) > 0) {
+                sb.append(new String(buffer, 0, read));
+            }
+        } catch (IOException e) {
+            throw new DotException(e);
+        }
+        return sb.toString();
     }
 }
 

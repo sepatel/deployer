@@ -3,6 +3,7 @@ package org.inigma.deployer;
 import org.junit.Test;
 
 import javax.script.ScriptException;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,6 +23,16 @@ public class DotConfigureTest {
         assertEquals(0, config.getPreDeploy().size());
         assertEquals(0, config.getPostDeploy().size());
         assertEquals(".dot", config.getTemplateExtension());
+
+        dot = new DotConfigure("src/test/resources/sample-config.yml");
+        DotConfiguration yamlConfig = dot.getConfig();
+        assertNotNull(yamlConfig);
+        assertEquals(config.getConfig().entrySet(), yamlConfig.getConfig().entrySet());
+        assertEquals(config.getDeploy(), yamlConfig.getDeploy());
+        assertEquals(config.getPostDeploy(), yamlConfig.getPostDeploy());
+        assertEquals(config.getPreDeploy(), yamlConfig.getPreDeploy());
+        assertEquals(config.getType(), yamlConfig.getType());
+        assertEquals(config.getUrl(), yamlConfig.getUrl());
     }
 
     @Test
@@ -33,6 +44,12 @@ public class DotConfigureTest {
     @Test
     public void invokeWarConfig() {
         DotConfigure dot = new DotConfigure(DotConfigure.class.getResourceAsStream("/invoke-config-war.json"));
+        dot.invoke();
+    }
+
+    @Test
+    public void invokeWarWithVariables() {
+        DotConfigure dot = new DotConfigure("src/test/resources/env-config.json");
         dot.invoke();
     }
 
@@ -60,11 +77,5 @@ public class DotConfigureTest {
         assertTrue(read > 0);
         String result = new String(buffer, 0, read);
         assertEquals(answer, result);
-    }
-
-    @Test
-    public void invokeWarWithVariables() {
-        DotConfigure dot = new DotConfigure("src/test/resources/env-config.json");
-        dot.invoke();
     }
 }
