@@ -281,9 +281,9 @@ public class DotConfigure {
 
     private void copy(InputStream in, OutputStream out) {
         byte[] buffer = new byte[4096];
-        int read = -1;
+        int read;
         try {
-            while ((read = in.read(buffer)) > 0) {
+            while ((read = in.read(buffer)) != -1) {
                 out.write(buffer, 0, read);
             }
         } catch (IOException e) {
